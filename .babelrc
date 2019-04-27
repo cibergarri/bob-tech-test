@@ -1,0 +1,17 @@
+{
+    "presets": ["@babel/preset-env"],
+    "env": {
+      "debug": {
+        "sourceMaps": "inline",
+        "retainLines": true
+      },
+      "test": {
+        "sourceMaps": "inline",
+        "retainLines": true
+      },
+    },
+    "plugins": [
+      ["@babel/plugin-transform-runtime", {"regenerator": true }] //this plugin is for the tests
+    ]
+  }
+  

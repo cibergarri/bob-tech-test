@@ -1,0 +1,64 @@
+{
+  "name": "bob-tech-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "set NODE_ENV=TEST && nyc mocha test/tests --recursive",
+    "clean": "rimraf build && mkdir build",
+    "build": "npm run clean && babel src --out-dir build",
+    "start": "node build/index.js",
+    "debug": "nodemon --inspect --exec babel-node debug.js",
+    "lint": "./node_modules/.bin/eslint src test",
+    "validate": "cls & concurrently -n test,lint,outdated \"npm run test\" \"npm run lint\" \"npm outdated\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cibergarri/bob-tech-test.git"
+  },
+  "author": "Javier Garrido",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cibergarri/bob-tech-test/issues"
+  },
+  "homepage": "https://github.com/cibergarri/bob-tech-test#readme",
+  "dependencies": {
+    "@babel/runtime": "7.4.4",
+    "chai": "4.2.0",
+    "express": "4.16.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.4.4",
+    "@babel/core": "7.4.4",
+    "@babel/node": "7.2.2",
+    "@babel/plugin-transform-runtime": "7.4.4",
+    "@babel/polyfill": "7.4.4",
+    "@babel/preset-env": "7.4.4",
+    "@babel/register": "7.4.4",
+    "concurrently": "4.1.0",
+    "dotenv": "7.0.0",
+    "eslint": "5.16.0",
+    "eslint-config-standard": "12.0.0",
+    "eslint-plugin-import": "2.17.2",
+    "eslint-plugin-node": "8.0.1",
+    "eslint-plugin-promise": "4.1.1",
+    "eslint-plugin-standard": "4.0.0",
+    "mocha": "6.1.4",
+    "nodemon": "1.18.11",
+    "nyc": "14.0.0",
+    "rimraf": "2.6.3"
+  },
+  "nyc": {
+    "require": [
+      "@babel/register"
+    ],
+    "sourceMap": false,
+    "include": [
+      "src/**/*.js"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ]
+  }
+}
