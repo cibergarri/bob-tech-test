@@ -7,7 +7,7 @@
     "test": "set NODE_ENV=TEST && nyc mocha test/tests --recursive",
     "clean": "rimraf build && mkdir build",
     "build": "npm run clean && babel src --out-dir build",
-    "start": "node build/index.js",
+    "start": "node build/cluster.js",
     "debug": "nodemon --inspect --exec babel-node debug.js",
     "lint": "./node_modules/.bin/eslint src test",
     "validate": "cls & concurrently -n test,lint,outdated \"npm run test\" \"npm run lint\" \"npm outdated\""
@@ -24,8 +24,14 @@
   "homepage": "https://github.com/cibergarri/bob-tech-test#readme",
   "dependencies": {
     "@babel/runtime": "7.4.4",
+    "body-parser": "1.19.0",
     "chai": "4.2.0",
-    "express": "4.16.4"
+    "chai-http": "4.3.0",
+    "express": "4.16.4",
+    "mongoose": "5.5.4",
+    "sinon": "7.3.2",
+    "socket.io": "2.2.0",
+    "winston": "3.2.1"
   },
   "devDependencies": {
     "@babel/cli": "7.4.4",

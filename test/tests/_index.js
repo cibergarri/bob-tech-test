@@ -2,10 +2,17 @@
 // eslint-disable-next-line no-unused-vars
 import { chai } from '../helpers/chai';
 import { init, data, close } from '../../src/helpers/express/server';
+import { logger } from '../../src/helpers/winston/log';
+import { getMoongoseConnectStub } from '../helpers/stubs';
 
+chai.use(require('chai-http'));
+chai.should();
+
+let moongoseConnectStub;
 before(async () => {
-  console.info('executing pre-tests code');
+  logger.info('executing pre-tests code');
   // initialize app / do global stubs here
+  moongoseConnectStub = getMoongoseConnectStub();
   await init();
 });
 
@@ -17,6 +24,7 @@ it('should have started the app', () => {
 
 after(async () => {
   // close app / reset global stubs
+  moongoseConnectStub.restore();
   await close();
-  console.info('post-tests code executed');
+  logger.info('post-tests code executed');
 });

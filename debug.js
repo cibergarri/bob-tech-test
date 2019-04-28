@@ -1,3 +1,5 @@
 require('dotenv').config();
 console.log(`Debugging ${process.env.NODE_ENV} environment`);
-require('./src/index');
+const app = require('./src/index');
+
+app.run();

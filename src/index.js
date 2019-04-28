@@ -1,12 +1,14 @@
 import { init } from './helpers/express/server';
+import { logger } from './helpers/winston/log';
 
-const run = async () => {
+export const run = async () => {
   try {
     await init();
-    console.info('App initialized');
+    logger.info('App initialized');
+    // const person = new Person({ name: 'test' });
+    // await person.save();
+    // logger.info('person saved');
   } catch (err) {
-    console.error('Error initializing app');
+    logger.error('Error initializing app');
   }
 };
-
-run();
