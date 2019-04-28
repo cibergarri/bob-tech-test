@@ -39,7 +39,11 @@ trucksRoute.route('/status')
             truck.geolocation = trck.data.geolocation || truck.geolocation;
             truck.status = info.payload.status || truck.status;
           } else {
-            truck = new Truck({ ...trck.data, ...info.payload });
+            truck = new Truck({
+              ...{ geolocation: { type: 'Point', coordinates: [ 0, 0 ] } },
+              ...trck.data,
+              ...info.payload,
+            });
           }
           const err = await dbHelper.save(truck);
           if (err) {
@@ -63,10 +67,9 @@ trucksRoute.route('/near')
         await dbHelper.find(Truck, {
           geolocation: {
             $near: {
-              $maxDistance: 100000,
               $geometry: {
                 type: 'Point',
-                coordinates: [lng, lat],
+                coordinates: [lat, lng],
               },
             },
           },

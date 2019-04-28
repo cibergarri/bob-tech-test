@@ -7,11 +7,14 @@ const schema = new Schema({
     type: {
       type: String,
       enum: ['Point'],
+      required: true,
     },
     coordinates: {
       type: [Number],
+      required: true,
+      default: [0, 0],
     },
   },
 });
-schema.index({ location: '2dsphere' });
-export const Truck = model('Truck', schema);
+schema.index({ geolocation: '2dsphere' });
+export const Truck = model('Truck_test', schema);
