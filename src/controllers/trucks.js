@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { logger } from '../helpers/winston/log';
-import { socketData } from '../helpers/socket/socket-helper';
+import { socketData, getStatusResponse } from '../helpers/socket/socket-helper';
 import { Truck } from '../models/truck';
 import * as dbHelper from '../helpers/mongo/dbHelper';
 
@@ -14,6 +14,22 @@ trucksRoute.use((req, res, next) => {
 trucksRoute.route('/')
   .get(async (req, res) => {
     try {
+      const { err: findErr, doc: trucks } =
+        await dbHelper.find(Truck, {});
+
+      if (findErr) {
+        logger.error('database error', findErr);
+        return;
+      }
+      res.status(200).send(trucks);
+    } catch (error) {
+      return res.status(500).send(error);
+    }
+  });
+
+trucksRoute.route('/connected')
+  .get(async (req, res) => {
+    try {
       res.status(200).send(socketData.trucks.map(trck => trck.data));
     } catch (error) {
       return res.status(500).send(error);
@@ -23,36 +39,46 @@ trucksRoute.route('/')
 trucksRoute.route('/status')
   .get(async (req, res) => {
     try {
-      for (const trck of socketData.trucks) {
-        trck.socket.on('DRIVER_STATUS_RESPONSE', async (info) => {
-          logger.info('DRIVER_STATUS_RESPONSE', info);
+      const promises = socketData.trucks
+        .map(async (trck) => {
+          const payload =
+            await getStatusResponse(trck.socket);
+
+          if (!payload || !payload.driverId) {
+            return;
+          }
+          const filter = { driverId: payload.driverId };
           const { err: findErr, doc } =
-            await dbHelper.findOne(Truck, { driverId: info.payload.driverId });
+            await dbHelper.findOne(Truck, filter);
 
           if (findErr) {
             logger.error('database error', findErr);
             return;
           }
+
           let truck;
           if (doc) {
             truck = doc;
             truck.geolocation = trck.data.geolocation || truck.geolocation;
-            truck.status = info.payload.status || truck.status;
+            truck.status = payload.status || truck.status;
           } else {
             truck = new Truck({
               ...{ geolocation: { type: 'Point', coordinates: [ 0, 0 ] } },
               ...trck.data,
-              ...info.payload,
+              ...payload,
             });
           }
           const err = await dbHelper.save(truck);
           if (err) {
             logger.error('database error ', err);
           }
+          return truck;
         });
-        trck.socket.emit('DRIVER_STATUS_REQUEST');
-      }
-      res.status(200).send('trucks information saved in db:' + socketData.trucks.length);
+
+      const result =
+        await Promise.all(promises);
+
+      res.status(200).send(result.filter(res => res !== undefined));
     } catch (error) {
       return res.status(500).send(error);
     }
