@@ -6,11 +6,6 @@ import * as dbHelper from '../helpers/mongo/dbHelper';
 
 export const trucksRoute = Router();
 
-trucksRoute.use((req, res, next) => {
-  logger.debug('trucks request');
-  next();
-});
-
 trucksRoute.route('/')
   .get(async (req, res) => {
     try {
@@ -30,7 +25,8 @@ trucksRoute.route('/')
 trucksRoute.route('/connected')
   .get(async (req, res) => {
     try {
-      res.status(200).send(socketData.trucks.map(trck => trck.data));
+      const connectedTrucks = Object.values(socketData.trucks).filter(trck => trck.socket);
+      res.status(200).send(connectedTrucks.map(trck => trck.data));
     } catch (error) {
       return res.status(500).send(error);
     }
@@ -39,7 +35,7 @@ trucksRoute.route('/connected')
 trucksRoute.route('/status')
   .get(async (req, res) => {
     try {
-      const promises = socketData.trucks
+      const promises = Object.values(socketData.trucks)
         .map(async (trck) => {
           const payload =
             await getStatusResponse(trck.socket);
@@ -60,10 +56,13 @@ trucksRoute.route('/status')
           if (doc) {
             truck = doc;
             truck.geolocation = trck.data.geolocation || truck.geolocation;
-            truck.status = payload.status || truck.status;
+            if (payload.status) {
+              truck.status = payload.status;
+              trck.data.status = payload.status;
+            }
           } else {
             truck = new Truck({
-              ...{ geolocation: { type: 'Point', coordinates: [ 0, 0 ] } },
+              ...{ geolocation: { type: 'Point', coordinates: [ 90, 0 ] } },
               ...trck.data,
               ...payload,
             });
@@ -78,7 +77,7 @@ trucksRoute.route('/status')
       const result =
         await Promise.all(promises);
 
-      res.status(200).send(result.filter(res => res !== undefined));
+      res.status(200).send(result.filter(rs => rs !== undefined));
     } catch (error) {
       return res.status(500).send(error);
     }
@@ -111,9 +110,3 @@ trucksRoute.route('/near')
       return res.status(500).send(error);
     }
   });
-
-// trucksRoute.route('/')
-//   .get(async (req, res) => {
-//     const trucks;
-//     res.status(200).send(trucks);
-//   });
